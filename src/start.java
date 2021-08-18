@@ -1,10 +1,9 @@
-import java.awt.image.BufferedImage;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import static java.awt.event.KeyEvent.*;
 
-public class main {
+public class start {
     // Monitor only where chat is at
         // Trigger on resets only by streamlabs
                 // Type in both commands then seconds later one of the 2 commands I need to retype. Makes me look like a bot.
@@ -23,21 +22,18 @@ public class main {
                 // Clicks after each command. Not a high priority to make this optimal.
                 // Constantly monitor that part of the screen till it changes
 
-    public static void main(String arg[]) {
+    public static void main(String args[]) {
         try {
             Images image =  new Images();
             BotMovment bot = new BotMovment();
             ClipBoard clipboard = new ClipBoard();
 
-            boolean flagPlinko = true, flagDrop = true;
-            String flagLastSent = "!drop";
             String dropCommand = "!drop", plinkoCommand = "!plinko", heistCommand = "!bankheist 1000";
 
             int tick = 500;
-            // Heist every 10 minutes. Taking off time to account for command delays.
-            int countDownHeist = 10*48*(1000/tick);
-            // If no commands sent after 1min 35 seconds run all.
-            int missBothCommands = 2;
+            //int countDownHeist = 10*48*(1000/tick);
+            int missedDrop = resetTimer(0,  40, tick);
+            int missedPlinko = resetTimer(0,  40, tick);
 
             while(true){
                 milliSecondSleep(tick);
@@ -48,19 +44,26 @@ public class main {
 //                    printText(heistCommand, bot, clipboard);
 //                }
 
-//                missBothCommands--;
-//                if(missBothCommands < 0) {
-//                    missBothCommands = ((60*1)+20)*(1000/tick);
-//                    printText(dropCommand, bot, clipboard);
-//                    printText(plinkoCommand, bot, clipboard);
-//                }
+                missedDrop--;
+                if(missedDrop < 0) {
+                    missedDrop = resetTimer(2,  0, tick);
+                    printText(dropCommand, bot, clipboard);
+                }
+
+                missedPlinko--;
+                if(missedPlinko < 0) {
+                    missedPlinko = resetTimer(2,  0, tick);
+                    printText(plinkoCommand, bot, clipboard);
+                }
 
                 switch(image.whichTriggered()) {
                     case "d":
                         printText(dropCommand, bot, clipboard);
+                        missedDrop = resetTimer(3,  0, tick);
                         break;
                     case "p":
                         printText(plinkoCommand, bot, clipboard);
+                        missedPlinko = resetTimer(3,  0, tick);
                         break;
                 }
             }
@@ -75,6 +78,10 @@ public class main {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    private static int resetTimer(int minutes, int seconds, int tickPerSecond) {
+        return ((60*minutes)+seconds)*(1000/tickPerSecond);
     }
 
     private static void printText(String text, BotMovment bot, ClipBoard clipboard) {
