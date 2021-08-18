@@ -6,21 +6,26 @@ import static java.awt.event.KeyEvent.*;
 public class start {
     // Monitor only where chat is at
         // Trigger on resets only by streamlabs
-                // Type in both commands then seconds later one of the 2 commands I need to retype. Makes me look like a bot.
-                // Tried typing in the same message twice in chat.
-            // Reset drop --- Make ticks if missed --- add random delays
+            // Reset drop
                 // Type in chat to drop
             // Reset plinko
                 // Type in chat to plinko
+            // Make ticks if missed
+            // add random delays
 
         // Trigger some bank heists
-            // After some time. Or jump in when other start one.
+            // After some time
                 // Issue running heist seconds after someone else litterally just finished.
+            // Jump in when others start one.
+            // Consider a weighted score. I feel going right after cooldown means I might lose more.
+                // I feel wins happen at least 50%+ of the time
+                // I feel my win ratio is better if I wait at least 3 minutes after each heist
+                // I feel I can't lose twice in a row.
+                // I feel the chance of losing is greater after at least 2 wins in a row
 
     // Trigger on channel points chest
             // click on chest
                 // Clicks after each command. Not a high priority to make this optimal.
-                // Constantly monitor that part of the screen till it changes
 
     public static void main(String args[]) {
         try {
@@ -37,6 +42,7 @@ public class start {
 
             while(true){
                 milliSecondSleep(tick);
+                clearChat(bot);
 //                countDownHeist--;
 //
 //                if(countDownHeist < 0) {
@@ -46,13 +52,13 @@ public class start {
 
                 missedDrop--;
                 if(missedDrop < 0) {
-                    missedDrop = resetTimer(2,  0, tick);
+                    missedDrop = resetTimer(1,  25, tick);
                     printText(dropCommand, bot, clipboard);
                 }
 
                 missedPlinko--;
                 if(missedPlinko < 0) {
-                    missedPlinko = resetTimer(2,  0, tick);
+                    missedPlinko = resetTimer(1,  25, tick);
                     printText(plinkoCommand, bot, clipboard);
                 }
 
@@ -91,6 +97,7 @@ public class start {
 
         bot.moveMouse(1310, 785);
         bot.clickMouse(BUTTON1_MASK);
+        clearChat(bot);
         bot.pressKey(VK_CONTROL);
         bot.pressKey(VK_V);
         bot.releaseKey(VK_CONTROL);
@@ -100,6 +107,14 @@ public class start {
         milliSecondSleep(1000);
 
         clickChest(bot);
+    }
+
+    private static void clearChat(BotMovment bot) {
+        bot.pressKey(VK_CONTROL);
+        bot.pressKey(VK_A);
+        bot.releaseKey(VK_CONTROL);
+        bot.releaseKey(VK_V);
+        bot.clickButton(VK_DELETE);
     }
 
     private static void clickChest(BotMovment bot) {
