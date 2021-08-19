@@ -99,7 +99,7 @@ public class Images {
         return Math.abs(rgb1.get(0) - rgb2.get(0)) + Math.abs(rgb1.get(1) - rgb2.get(1)) + Math.abs(rgb1.get(2) - rgb2.get(2));
     }
 
-    private long getDifference(BufferedImage img1, BufferedImage img2) {
+    private double getDifference(BufferedImage img1, BufferedImage img2) {
         long diff = 0;
 
         for(int x = 0; x < 200 ; x++) {
@@ -110,19 +110,22 @@ public class Images {
 
             diff += getData(rgb1, rgb2);
         }
+
         double avg = diff/(200*3);
         double percentage = (avg/255)*100;
-        System.out.print(" Difference: "+percentage+" ");
-        return diff;
+        return percentage;
     }
 
     private String whichHorizontal(BufferedImage chat) {
-        if (getDifference(plinko, chat) == 0) {
-            System.out.println(" for plinko ");
-            return "p";
-        } else if(getDifference(drop, chat) == 0) {
-            System.out.println(" for drop ");
-            return "d";
+        double diffPlinko = getDifference(plinko, chat);
+        double diffDrop = getDifference(drop, chat);
+
+        if(diffPlinko < 9 || diffDrop < 9) {
+            if (diffPlinko < diffDrop) {
+                return "p";
+            } else {
+                return "d";
+            }
         }
 
         return "";
