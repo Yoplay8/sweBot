@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 
 public class Images {
     Screen screen = new Screen();
@@ -30,40 +31,45 @@ public class Images {
         return getClass().getClassLoader().getResource(fileName);
     }
 
-    public String whichTriggered() {
+    public String whichTriggered() throws IOException, InterruptedException {
         BufferedImage chat = screen.captureScreen(1275, 731, 204, 20);
         //ImageIO.write(chat, "png", new File("C:\\Users\\Tyler\\Downloads\\temp.png"));
 
         if(verticalePassed(drop, chat)) {
-            return whichHorizontal(plinko, drop, chat);
-        } else {
-            return "";
+            return whichHorizontal(chat);
         }
+
+        return "";
     }
+
+    // TEMP CODE TO FIND NEW IMAGES
+//    private void imageFinder(BufferedImage image1, BufferedImage image2) throws IOException, InterruptedException {
+//        int count = 0;
+//        do {
+//            BufferedImage chat = screen.captureScreen(1275, 731, 204, 20);
+//            if(verticalePassed(drop, chat)) {
+//                ImageIO.write(chat, "png", new File("C:\\Users\\Tyler\\OneDrive\\Documents\\SweepBotImages_"+count));
+//                count++;
+//                TimeUnit.MILLISECONDS.sleep(2000);
+//            }
+//        }while(true);
+//    }
 
     private boolean verticalePassed(BufferedImage image1, BufferedImage image2) {
         long diff = 0;
 
         offsetY = 0;
         for(int y1 = 0, y2 = 0; y1 < image1.getHeight() && y2 < image2.getHeight(); y2++) {
-            //Getting the RGB values of a pixel
             int pixel1 = image1.getRGB(10, y1);
-            Color color1 = new Color(pixel1, true);
-            int r1 = color1.getRed();
-            int g1 = color1.getGreen();
-            int b1 = color1.getBlue();
             int pixel2 = image2.getRGB(10, y2);
-            Color color2 = new Color(pixel2, true);
-            int r2 = color2.getRed();
-            int g2 = color2.getGreen();
-            int b2 = color2.getBlue();
+            ArrayList<Integer> rgb1 = getRgb(pixel1);
+            ArrayList<Integer> rgb2 = getRgb(pixel2);
 
-            if(!(r2 == 24 && g2 == 24 && b2 == 27)){
+            if(!(isBackground(rgb2.get(0), rgb2.get(1), rgb2.get(2)))){
                 if(offsetY == 0) {
                     offsetY = y2;
                 }
-                long data = Math.abs(r1 - r2) + Math.abs(g1 - g2) + Math.abs(b1 - b2);
-                diff += data;
+                diff += getData(rgb1, rgb2);
                 y1++;
             }
         }
@@ -75,49 +81,47 @@ public class Images {
         return false;
     }
 
-    private String whichHorizontal(BufferedImage plinko, BufferedImage drop, BufferedImage chat) {
+    private ArrayList<Integer> getRgb(int pixel) {
+        ArrayList<Integer> rgb = new ArrayList<>();
+        Color color1 = new Color(pixel, true);
+        rgb.add(color1.getRed());
+        rgb.add(color1.getGreen());
+        rgb.add(color1.getBlue());
+
+        return rgb;
+    }
+
+    private boolean isBackground(int r, int g, int b) {
+        return r == 24 && g == 24 && b == 27;
+    }
+
+    private long getData(ArrayList<Integer> rgb1, ArrayList<Integer> rgb2) {
+        return Math.abs(rgb1.get(0) - rgb2.get(0)) + Math.abs(rgb1.get(1) - rgb2.get(1)) + Math.abs(rgb1.get(2) - rgb2.get(2));
+    }
+
+    private long getDifference(BufferedImage img1, BufferedImage img2) {
         long diff = 0;
 
         for(int x = 0; x < 200 ; x++) {
-            //Getting the RGB values of a pixel
-            int pixel1 = plinko.getRGB(x, 9);
-            Color color1 = new Color(pixel1, true);
-            int r1 = color1.getRed();
-            int g1 = color1.getGreen();
-            int b1 = color1.getBlue();
-            int pixel2 = chat.getRGB(x, 9+offsetY);
-            Color color2 = new Color(pixel2, true);
-            int r2 = color2.getRed();
-            int g2 = color2.getGreen();
-            int b2 = color2.getBlue();
+            int pixel1 = img1.getRGB(x, 9);
+            int pixel2 = img2.getRGB(x, 9+offsetY);
+            ArrayList<Integer> rgb1 = getRgb(pixel1);
+            ArrayList<Integer> rgb2 = getRgb(pixel2);
 
-            long data = Math.abs(r1 - r2) + Math.abs(g1 - g2) + Math.abs(b1 - b2);
-            diff += data;
+            diff += getData(rgb1, rgb2);
         }
+        double avg = diff/(200*3);
+        double percentage = (avg/255)*100;
+        System.out.print(" Difference: "+percentage+" ");
+        return diff;
+    }
 
-        if (diff == 0) {
+    private String whichHorizontal(BufferedImage chat) {
+        if (getDifference(plinko, chat) == 0) {
+            System.out.println(" for plinko ");
             return "p";
-        }
-
-        diff = 0;
-        for(int x = 0; x < 200 ; x++) {
-            //Getting the RGB values of a pixel
-            int pixel1 = drop.getRGB(x, 9);
-            Color color1 = new Color(pixel1, true);
-            int r1 = color1.getRed();
-            int g1 = color1.getGreen();
-            int b1 = color1.getBlue();
-            int pixel2 = chat.getRGB(x, 9+offsetY);
-            Color color2 = new Color(pixel2, true);
-            int r2 = color2.getRed();
-            int g2 = color2.getGreen();
-            int b2 = color2.getBlue();
-
-            long data = Math.abs(r1 - r2) + Math.abs(g1 - g2) + Math.abs(b1 - b2);
-            diff += data;
-        }
-
-        if (diff == 0) {
+        } else if(getDifference(drop, chat) == 0) {
+            System.out.println(" for drop ");
             return "d";
         }
 

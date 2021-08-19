@@ -42,7 +42,6 @@ public class start {
 
             while(true){
                 milliSecondSleep(tick);
-                clearChat(bot);
 //                countDownHeist--;
 //
 //                if(countDownHeist < 0) {
@@ -52,22 +51,26 @@ public class start {
 
                 missedDrop--;
                 if(missedDrop < 0) {
+                    debugInChatMessage(bot, VK_M);
                     missedDrop = resetTimer(1,  25, tick);
                     printText(dropCommand, bot, clipboard);
                 }
 
                 missedPlinko--;
                 if(missedPlinko < 0) {
+                    debugInChatMessage(bot, VK_M);
                     missedPlinko = resetTimer(1,  25, tick);
                     printText(plinkoCommand, bot, clipboard);
                 }
 
                 switch(image.whichTriggered()) {
                     case "d":
+                        debugInChatMessage(bot, VK_R);
                         printText(dropCommand, bot, clipboard);
                         missedDrop = resetTimer(3,  0, tick);
                         break;
                     case "p":
+                        debugInChatMessage(bot, VK_R);
                         printText(plinkoCommand, bot, clipboard);
                         missedPlinko = resetTimer(3,  0, tick);
                         break;
@@ -102,7 +105,7 @@ public class start {
         bot.pressKey(VK_V);
         bot.releaseKey(VK_CONTROL);
         bot.releaseKey(VK_V);
-        milliSecondSleep(4000+randDelay);
+        milliSecondSleep(randDelay);
         bot.clickButton(VK_ENTER);
         milliSecondSleep(1000);
 
@@ -121,5 +124,12 @@ public class start {
         bot.moveMouse(1355, 835);
         milliSecondSleep(100);
         bot.clickMouse(BUTTON1_MASK);
+    }
+
+    private static void debugInChatMessage(BotMovment bot, int key) {
+        bot.moveMouse(1310, 785);
+        bot.clickMouse(BUTTON1_MASK);
+        bot.clickButton(key);
+        milliSecondSleep(4000);
     }
 }
